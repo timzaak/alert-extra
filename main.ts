@@ -3,11 +3,7 @@ import { CoreServiceImpl } from "./src/services/core-service.ts";
 import { MqttClientImpl } from "./src/mqtt/mqtt-client-impl.ts";
 import { InMemoryStatusRepository } from "./src/repositories/status-repository.ts";
 import { ApiServer } from "./src/api/server.ts";
-import {
-  logger,
-  LoggerService,
-  LogLevel,
-} from "./src/services/logger-service.ts";
+import { logger, LogLevel } from "./src/services/logger-service.ts";
 
 // Application version
 const APP_VERSION = "1.0.0";

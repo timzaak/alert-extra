@@ -12,14 +12,16 @@ class MockMqttClient implements MqttClient {
   onStatusChangeCalled = 0;
   destroyCalled = 0;
 
-  async connect(): Promise<void> {
+  connect(): Promise<void> {
     this.connectCalled++;
     this.connected = true;
+    return Promise.resolve();
   }
 
-  async disconnect(): Promise<void> {
+  disconnect(): Promise<void> {
     this.disconnectCalled++;
     this.connected = false;
+    return Promise.resolve();
   }
 
   isConnected(): boolean {
@@ -153,7 +155,7 @@ Deno.test("CoreServiceImpl - update status repository when MQTT status changes",
   assertEquals(currentStatus.lastDisconnected, newStatus.lastDisconnected);
 });
 
-Deno.test("CoreServiceImpl - return current status from repository", async () => {
+Deno.test("CoreServiceImpl - return current status from repository", () => {
   const mqttClient = new MockMqttClient();
   const statusRepository = new MockStatusRepository();
   const config: AppConfig = {
@@ -250,7 +252,7 @@ Deno.test("CoreServiceImpl - throw error if initialization fails", async () => {
   };
 
   // Make connect throw an error
-  mqttClient.connect = async () => {
+  mqttClient.connect = () => {
     throw new Error("Connection failed");
   };
 
@@ -275,7 +277,7 @@ Deno.test("CoreServiceImpl - throw error if initialization fails", async () => {
 });
 
 // Helper assertion functions
-function assertEquals(actual: any, expected: any) {
+function assertEquals(actual: unknown, expected: unknown) {
   if (actual !== expected) {
     throw new Error(`Expected ${expected} but got ${actual}`);
   }

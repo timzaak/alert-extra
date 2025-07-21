@@ -3,7 +3,6 @@ import { logger as honoLogger } from "hono/logger";
 import { cors } from "hono/cors";
 import { prettyJSON } from "hono/pretty-json";
 import { CoreService } from "../services/core-service.ts";
-import { logger } from "../services/logger-service.ts";
 import { createErrorResponse, handleError } from "../utils/error-utils.ts";
 
 /**

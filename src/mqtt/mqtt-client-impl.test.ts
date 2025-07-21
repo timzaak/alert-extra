@@ -90,7 +90,7 @@ Deno.test("MqttClientImpl - latency measurement - sendPing", () => {
   // @ts-ignore - setting up mock for testing
   client["client"] = {
     connected: true,
-    publish: function (topic: string, _message: any) {
+    publish: function (topic: string, _message: unknown) {
       publishCalled = true;
       publishTopic = topic;
       return this; // Return this to match MqttClient interface
@@ -172,8 +172,9 @@ Deno.test("MqttClientImpl - destroy method", () => {
 
   // Mock methods
   // @ts-ignore - setting up mock for testing
-  client["disconnect"] = async () => {
+  client["disconnect"] = () => {
     disconnectCalled = true;
+    return Promise.resolve();
   };
 
   // @ts-ignore - setting up mock for testing
@@ -190,13 +191,13 @@ Deno.test("MqttClientImpl - destroy method", () => {
 });
 
 // Helper assertion functions
-function assertEquals(actual: any, expected: any) {
+function assertEquals(actual: unknown, expected: unknown) {
   if (actual !== expected) {
     throw new Error(`Expected ${expected} but got ${actual}`);
   }
 }
 
-function assertNotNull(value: any) {
+function assertNotNull(value: unknown) {
   if (value === null || value === undefined) {
     throw new Error(
       `Expected value to not be null or undefined, but got ${value}`,
@@ -340,8 +341,9 @@ Deno.test("MqttClientImpl - reconnection - destroy resets reconnection state", (
   };
 
   // @ts-ignore - setting up mock for testing
-  client["disconnect"] = async () => {
+  client["disconnect"] = () => {
     disconnectCalled = true;
+    return Promise.resolve();
   };
 
   // @ts-ignore - setting up mock for testing
@@ -365,7 +367,7 @@ Deno.test("MqttClientImpl - reconnection - destroy resets reconnection state", (
   assertEquals(client["reconnectAttempts"], 0);
 });
 
-Deno.test("MqttClientImpl - reconnection - attemptReconnection with exponential backoff", async () => {
+Deno.test("MqttClientImpl - reconnection - attemptReconnection with exponential backoff", () => {
   const client = new MqttClientImpl();
 
   // Mock setTimeout to capture delay value
@@ -373,7 +375,7 @@ Deno.test("MqttClientImpl - reconnection - attemptReconnection with exponential 
   let capturedDelay = 0;
 
   // @ts-ignore - setting up global mock for testing
-  globalThis.setTimeout = (callback: Function, delay: number) => {
+  globalThis.setTimeout = (_callback: () => void, delay: number) => {
     capturedDelay = delay;
     return 1 as unknown as number; // Return a dummy timeout ID
   };

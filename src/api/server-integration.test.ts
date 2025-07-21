@@ -5,6 +5,7 @@ import { InMemoryStatusRepository } from "../repositories/status-repository.ts";
 import { AppConfig } from "../models/app-config.ts";
 import {
   createDefaultMqttStatus,
+  MqttStatus,
   updateConnectedStatus,
 } from "../models/mqtt-status.ts";
 
@@ -21,9 +22,9 @@ function assertEquals(actual: unknown, expected: unknown, msg?: string): void {
 
 // Mock MqttClient for integration testing
 class MockMqttClient extends MqttClientImpl {
-  private statusCallback: ((status: any) => void) | null = null;
+  private statusCallback: ((status: MqttStatus) => void) | null = null;
 
-  async connect(): Promise<void> {
+  override connect(): Promise<void> {
     // Simulate successful connection
     if (this.statusCallback) {
       const status = createDefaultMqttStatus();
@@ -32,15 +33,15 @@ class MockMqttClient extends MqttClientImpl {
     return Promise.resolve();
   }
 
-  async disconnect(): Promise<void> {
+  override disconnect(): Promise<void> {
     return Promise.resolve();
   }
 
-  onStatusChange(callback: (status: any) => void): void {
+  override onStatusChange(callback: (status: MqttStatus) => void): void {
     this.statusCallback = callback;
   }
 
-  destroy(): void {
+  override destroy(): void {
     // Do nothing for tests
   }
 }

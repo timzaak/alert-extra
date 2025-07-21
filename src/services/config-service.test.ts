@@ -25,7 +25,7 @@ function assertEquals(actual: unknown, expected: unknown, msg?: string): void {
 
 async function assertThrows(
   fn: () => Promise<unknown> | unknown,
-  errorClass: any,
+  errorClass: new () => Error,
   msgIncludes?: string,
 ): Promise<void> {
   try {
@@ -33,10 +33,12 @@ async function assertThrows(
     throw new Error(
       `Expected ${errorClass.name} to be thrown, but nothing was thrown`,
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (!(error instanceof errorClass)) {
       throw new Error(
-        `Expected ${errorClass.name} to be thrown, but got ${error.constructor.name}`,
+        `Expected ${errorClass.name} to be thrown, but got ${
+          error instanceof Error ? error.constructor.name : "unknown error type"
+        }`,
       );
     }
     if (msgIncludes && !error.message.includes(msgIncludes)) {

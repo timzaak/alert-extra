@@ -2,12 +2,7 @@ import { AppConfig, MqttStatus } from "../models/index.ts";
 import { MqttClient } from "../mqtt/mqtt-client.ts";
 import { StatusRepository } from "../repositories/status-repository.ts";
 import { logger } from "./logger-service.ts";
-import {
-  AppError,
-  ErrorCode,
-  handleError,
-  withErrorHandling,
-} from "../utils/error-utils.ts";
+import { AppError, ErrorCode, handleError } from "../utils/error-utils.ts";
 
 /**
  * Core Service interface as defined in the design document

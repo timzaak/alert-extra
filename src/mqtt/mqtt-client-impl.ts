@@ -157,7 +157,7 @@ export class MqttClientImpl implements MqttClient {
   /**
    * Disconnect from the MQTT server
    */
-  async disconnect(): Promise<void> {
+  disconnect(): Promise<void> {
     // Stop latency checks when disconnecting
     this.stopLatencyChecks();
 

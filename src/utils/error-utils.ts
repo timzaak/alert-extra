@@ -103,14 +103,17 @@ export function createErrorResponse(error: unknown): {
  * @param rethrow Whether to rethrow errors
  * @returns Wrapped function
  */
-export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
+export function withErrorHandling<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(
   fn: T,
   context: string,
   rethrow = false,
 ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
   return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
     try {
-      return await fn(...args);
+      // Use type assertion to ensure the return type matches ReturnType<T>
+      return await fn(...args) as ReturnType<T>;
     } catch (error) {
       handleError(error, context, rethrow);
       throw error;

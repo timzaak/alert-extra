@@ -27,11 +27,12 @@ Deno.test("CoreServiceImpl - Integration - MQTT client updates status repository
 
   // Mock the connect method to avoid actual MQTT connection
   // @ts-ignore - accessing private property for testing
-  mqttClient.connect = async () => {
+  mqttClient.connect = () => {
     console.log("Mock connect called");
     // Simulate connection established
     // @ts-ignore - accessing private method for testing
     mqttClient["handleConnect"]();
+    return Promise.resolve();
   };
 
   // Initialize the core service
@@ -60,13 +61,13 @@ Deno.test("CoreServiceImpl - Integration - MQTT client updates status repository
 });
 
 // Helper assertion functions
-function assertEquals(actual: any, expected: any) {
+function assertEquals(actual: unknown, expected: unknown) {
   if (actual !== expected) {
     throw new Error(`Expected ${expected} but got ${actual}`);
   }
 }
 
-function assertNotNull(value: any) {
+function assertNotNull(value: unknown) {
   if (value === null || value === undefined) {
     throw new Error(
       `Expected value to not be null or undefined, but got ${value}`,
