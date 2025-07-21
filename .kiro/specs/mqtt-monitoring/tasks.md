@@ -1,23 +1,18 @@
 # Implementation Plan
 
--
-  1. [x] Set up project structure and configuration
-
+- [x] 1. Set up project structure and configuration
   - [x] 1.1 Create basic project structure with necessary directories
-
     - Set up src directory with subdirectories for components
     - Create configuration file structure
     - _Requirements: 2.1_
 
   - [x] 1.2 Implement configuration loading and validation
-
     - Create configuration interface for MQTT settings
     - Implement configuration loading from file/environment
     - Add validation for required configuration parameters
     - _Requirements: 2.1, 2.2_
 
--
-  2. [ ] Implement core data models and interfaces
+- [ ] 2. Implement core data models and interfaces
   - [ ] 2.1 Create MQTT status data model
     - Define MqttStatus interface with connection state and metrics
     - Implement helper functions for status management
@@ -29,8 +24,7 @@
     - Write tests for repository operations
     - _Requirements: 1.3, 1.4, 2.2_
 
--
-  3. [ ] Implement MQTT client functionality
+- [ ] 3. Implement MQTT client functionality
   - [ ] 3.1 Create MQTT client interface and implementation
     - Define MQTT client interface
     - Implement connection establishment logic
@@ -49,8 +43,7 @@
     - Write tests for reconnection scenarios
     - _Requirements: 1.5, 1.6_
 
--
-  4. [ ] Implement Core Service
+- [ ] 4. Implement Core Service
   - [ ] 4.1 Create Core Service interface and implementation
     - Define Core Service interface
     - Implement initialization and shutdown logic
@@ -63,8 +56,7 @@
     - Write tests for status flow
     - _Requirements: 1.3, 1.4_
 
--
-  5. [ ] Implement HTTP API
+- [ ] 5. Implement HTTP API
   - [ ] 5.1 Create HTTP server setup
     - Set up basic HTTP server
     - Implement request handling framework
@@ -78,8 +70,7 @@
     - Write tests for API responses
     - _Requirements: 1.1_
 
--
-  6. [ ] Implement application entry point
+- [ ] 6. Implement application entry point
   - [ ] 6.1 Create main application file
     - Implement startup sequence
     - Initialize all components
@@ -91,8 +82,7 @@
     - Add error logging throughout the application
     - _Requirements: 2.1_
 
--
-  7. [ ] Integration testing
+- [ ] 7. Integration testing
   - [ ] 7.1 Create end-to-end tests
     - Test complete flow from API request to status response
     - Test MQTT connection monitoring
@@ -101,4 +91,4 @@
   - [ ] 7.2 Create Docker setup for testing
     - Add Docker configuration for local testing
     - Include MQTT broker for integration tests
-    - _Requirements: 1.2, 1.3_
+    - _Requir
