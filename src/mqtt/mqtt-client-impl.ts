@@ -6,6 +6,11 @@ import * as mqtt from 'mqtt';
 const PING_TOPIC = 'alert/ping';
 const PONG_TOPIC = 'alert/pong';
 
+// Reconnection constants
+const INITIAL_RECONNECT_DELAY_MS = 1000; // Start with 1 second delay
+const MAX_RECONNECT_DELAY_MS = 30000;    // Maximum 30 seconds delay
+const RECONNECT_BACKOFF_FACTOR = 1.5;    // Exponential backoff factor
+
 /**
  * Implementation of the MqttClient interface
  */
@@ -17,6 +22,9 @@ export class MqttClientImpl implements MqttClient {
   private latencyCheckInterval: number | null = null;
   private pingTimestamp: number | null = null;
   private pingTimeoutId: number | null = null;
+  private reconnectTimeoutId: number | null = null;
+  private reconnectAttempts: number = 0;
+  private reconnecting: boolean = false;
 
   /**
    * Connect to the MQTT server using the provided configuration
@@ -26,6 +34,9 @@ export class MqttClientImpl implements MqttClient {
     if (this.client) {
       await this.disconnect();
     }
+
+    // Cancel any pending reconnection attempts
+    this.cancelReconnection();
 
     this.config = config;
     const url = `mqtt://${config.url}:${config.port}`;
@@ -50,6 +61,10 @@ export class MqttClientImpl implements MqttClient {
         this.client = mqtt.connect(url, options);
 
         this.client.on('connect', () => {
+          // Reset reconnection state on successful connection
+          this.reconnecting = false;
+          this.reconnectAttempts = 0;
+          
           this.handleConnect();
           
           // Subscribe to pong topic for latency measurement
@@ -106,6 +121,10 @@ export class MqttClientImpl implements MqttClient {
   async disconnect(): Promise<void> {
     // Stop latency checks when disconnecting
     this.stopLatencyChecks();
+    
+    // Cancel any pending reconnection attempts
+    this.cancelReconnection();
+    this.reconnecting = false;
     
     return new Promise((resolve) => {
       if (!this.client) {
@@ -169,6 +188,73 @@ export class MqttClientImpl implements MqttClient {
   private handleDisconnect(): void {
     this.status = updateDisconnectedStatus(this.status);
     this.notifyStatusChange();
+    
+    // Start reconnection process if we have a config and aren't already reconnecting
+    if (this.config && !this.reconnecting) {
+      this.startReconnection();
+    }
+  }
+  
+  /**
+   * Start the reconnection process with exponential backoff
+   */
+  private startReconnection(): void {
+    // Don't start reconnection if we're already reconnecting
+    if (this.reconnecting) {
+      return;
+    }
+    
+    this.reconnecting = true;
+    this.attemptReconnection();
+  }
+  
+  /**
+   * Attempt to reconnect to the MQTT server with exponential backoff
+   */
+  private attemptReconnection(): void {
+    // Cancel any existing reconnection attempt
+    this.cancelReconnection();
+    
+    // Calculate delay with exponential backoff
+    const delay = Math.min(
+      INITIAL_RECONNECT_DELAY_MS * Math.pow(RECONNECT_BACKOFF_FACTOR, this.reconnectAttempts),
+      MAX_RECONNECT_DELAY_MS
+    );
+    
+    console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
+    
+    // Schedule reconnection attempt
+    this.reconnectTimeoutId = setTimeout(async () => {
+      this.reconnectTimeoutId = null;
+      
+      try {
+        if (this.config) {
+          console.log(`Reconnecting to MQTT server (attempt ${this.reconnectAttempts + 1})...`);
+          await this.connect(this.config);
+          
+          // Reset reconnection state on successful connection
+          this.reconnectAttempts = 0;
+          this.reconnecting = false;
+          console.log('Reconnection successful');
+        }
+      } catch (error) {
+        console.error('Reconnection failed:', error);
+        
+        // Increment attempt counter and try again
+        this.reconnectAttempts++;
+        this.attemptReconnection();
+      }
+    }, delay) as unknown as number;
+  }
+  
+  /**
+   * Cancel any pending reconnection attempts
+   */
+  private cancelReconnection(): void {
+    if (this.reconnectTimeoutId !== null) {
+      clearTimeout(this.reconnectTimeoutId);
+      this.reconnectTimeoutId = null;
+    }
   }
 
   /**
@@ -272,6 +358,9 @@ export class MqttClientImpl implements MqttClient {
    */
   destroy(): void {
     this.stopLatencyChecks();
+    this.cancelReconnection();
+    this.reconnecting = false;
+    this.reconnectAttempts = 0;
     this.disconnect();
   }
 }

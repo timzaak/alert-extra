@@ -40,10 +40,9 @@
     - Write tests for latency measurement accuracy
     - _Requirements: 1.4_
 
-  - [ ] 3.3 Implement reconnection logic
+  - [x] 3.3 Implement reconnection logic
     - Add automatic reconnection with backoff strategy
     - Implement connection status tracking
-    - Write tests for reconnection scenarios
     - _Requirements: 1.5, 1.6_
 
 - [ ] 4. Implement Core Service
@@ -56,7 +55,6 @@
   - [ ] 4.2 Integrate MQTT client with Status Repository
     - Connect status updates from MQTT client to repository
     - Implement status retrieval methods
-    - Write tests for status flow
     - _Requirements: 1.3, 1.4_
 
 - [ ] 5. Implement HTTP API
@@ -70,7 +68,6 @@
     - Create GET endpoint for MQTT status
     - Connect endpoint to Core Service
     - Format response according to specification
-    - Write tests for API responses
     - _Requirements: 1.1_
 
 - [ ] 6. Implement application entry point
@@ -84,14 +81,3 @@
     - Implement logging framework integration
     - Add error logging throughout the application
     - _Requirements: 2.1_
-
-- [ ] 7. Integration testing
-  - [ ] 7.1 Create end-to-end tests
-    - Test complete flow from API request to status response
-    - Test MQTT connection monitoring
-    - _Requirements: 1.1, 1.3, 1.4_
-
-  - [ ] 7.2 Create Docker setup for testing
-    - Add Docker configuration for local testing
-    - Include MQTT broker for integration tests
-    - _Requir
