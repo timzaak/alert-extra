@@ -34,7 +34,7 @@
     - Add event handlers for connection status changes
     - _Requirements: 1.2, 1.3, 1.5, 1.6_
 
-  - [ ] 3.2 Implement latency measurement
+  - [x] 3.2 Implement latency measurement
     - Add ping/pong mechanism for latency measurement
     - Implement periodic latency checks
     - Write tests for latency measurement accuracy

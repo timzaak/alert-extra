@@ -9,6 +9,7 @@ export interface MqttClient {
   isConnected(): boolean;
   getLatency(): number;
   onStatusChange(callback: (status: MqttStatus) => void): void;
+  destroy(): void;
 }
 
-// Implementation will be added in task 3.1
+// Implementation added in task 3.1 and 3.2
