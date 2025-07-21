@@ -12,13 +12,16 @@
     - Add validation for required configuration parameters
     - _Requirements: 2.1, 2.2_
 
-- [ ] 2. Implement core data models and interfaces
-  - [ ] 2.1 Create MQTT status data model
+- [x] 2. Implement core data models and interfaces
+
+  - [x] 2.1 Create MQTT status data model
+
     - Define MqttStatus interface with connection state and metrics
     - Implement helper functions for status management
     - _Requirements: 1.3, 1.4, 2.2_
 
-  - [ ] 2.2 Create Status Repository
+  - [x] 2.2 Create Status Repository
+
     - Implement in-memory status repository
     - Add methods for updating and retrieving status
     - Write tests for repository operations
