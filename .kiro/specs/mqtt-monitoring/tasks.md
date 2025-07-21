@@ -45,14 +45,14 @@
     - Implement connection status tracking
     - _Requirements: 1.5, 1.6_
 
-- [ ] 4. Implement Core Service
-  - [ ] 4.1 Create Core Service interface and implementation
+- [x] 4. Implement Core Service
+  - [x] 4.1 Create Core Service interface and implementation
     - Define Core Service interface
     - Implement initialization and shutdown logic
     - Add MQTT client management
     - _Requirements: 2.1, 2.3_
 
-  - [ ] 4.2 Integrate MQTT client with Status Repository
+  - [x] 4.2 Integrate MQTT client with Status Repository
     - Connect status updates from MQTT client to repository
     - Implement status retrieval methods
     - _Requirements: 1.3, 1.4_
