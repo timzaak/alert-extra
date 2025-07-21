@@ -4,9 +4,11 @@
     "host": "0.0.0.0"
   },
   "mqtt": {
-    "url": "mqtt://localhost",
+    "url": "mqtt://127.0.0.1",
     "port": 1883,
     "clientId": "alert-mqtt-monitor",
-    "keepAlive": 60
+    "keepAlive": 60,
+    "pingTopic": "alert/health",
+    "pongTopic": "alert/health"
   }
 }

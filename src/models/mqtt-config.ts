@@ -8,4 +8,6 @@ export interface MqttConfig {
   password?: string;
   clientId: string;
   keepAlive?: number;
+  pingTopic?: string;
+  pongTopic?: string;
 }

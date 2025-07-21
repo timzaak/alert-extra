@@ -60,11 +60,14 @@ Deno.addSignalListener("SIGINT", async () => {
   Deno.exit(0);
 });
 
-Deno.addSignalListener("SIGTERM", async () => {
-  logger.info("Received SIGTERM signal. Shutting down...");
-  await shutdown();
-  Deno.exit(0);
-});
+// Only add SIGTERM handler on non-Windows platforms
+if (Deno.build.os !== "windows") {
+  Deno.addSignalListener("SIGTERM", async () => {
+    logger.info("Received SIGTERM signal. Shutting down...");
+    await shutdown();
+    Deno.exit(0);
+  });
+}
 
 /**
  * Graceful shutdown function

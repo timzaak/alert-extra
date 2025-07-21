@@ -4,9 +4,9 @@ import * as mqtt from 'mqtt';
 import { logger } from '../services/logger-service.ts';
 import { AppError, ErrorCode, handleError } from '../utils/error-utils.ts';
 
-// Topic used for ping/pong latency measurement
-const PING_TOPIC = 'alert/ping';
-const PONG_TOPIC = 'alert/pong';
+// Default topics used for ping/pong latency measurement if not specified in config
+const DEFAULT_PING_TOPIC = 'alert/ping';
+const DEFAULT_PONG_TOPIC = 'alert/pong';
 
 // Reconnection constants
 const INITIAL_RECONNECT_DELAY_MS = 1000; // Start with 1 second delay
@@ -27,6 +27,8 @@ export class MqttClientImpl implements MqttClient {
   private reconnectTimeoutId: number | null = null;
   private reconnectAttempts: number = 0;
   private reconnecting: boolean = false;
+  private pingTopic: string = DEFAULT_PING_TOPIC;
+  private pongTopic: string = DEFAULT_PONG_TOPIC;
 
   /**
    * Connect to the MQTT server using the provided configuration
@@ -41,7 +43,11 @@ export class MqttClientImpl implements MqttClient {
     this.cancelReconnection();
 
     this.config = config;
-    const url = `mqtt://${config.url}:${config.port}`;
+    // Set ping/pong topics from config or use defaults
+    this.pingTopic = config.pingTopic || DEFAULT_PING_TOPIC;
+    this.pongTopic = config.pongTopic || DEFAULT_PONG_TOPIC;
+    
+    const url = `${config.url}:${config.port}`;
     
     const options: mqtt.IClientOptions = {
       clientId: config.clientId,
@@ -71,15 +77,15 @@ export class MqttClientImpl implements MqttClient {
           this.handleConnect();
           
           // Subscribe to pong topic for latency measurement
-          this.client?.subscribe(PONG_TOPIC, (err) => {
+          this.client?.subscribe(this.pongTopic, (err) => {
             if (err) {
-              handleError(err, 'Failed to subscribe to pong topic');
+              handleError(err, `Failed to subscribe to pong topic: ${this.pongTopic}`);
             }
           });
           
           // Setup message handler for pong messages
           this.client?.on('message', (topic, message) => {
-            if (topic === PONG_TOPIC) {
+            if (topic === this.pongTopic) {
               this.handlePongMessage(message);
             }
           });
@@ -338,7 +344,7 @@ export class MqttClientImpl implements MqttClient {
     this.pingTimestamp = performance.now();
     
     // Publish ping message
-    this.client.publish(PING_TOPIC, pingId, { qos: 0 });
+    this.client.publish(this.pingTopic, pingId, { qos: 0 });
     
     // Set timeout for ping response (5 seconds)
     this.pingTimeoutId = setTimeout(() => {
