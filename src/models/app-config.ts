@@ -1,4 +1,4 @@
-import { MqttConfig } from './mqtt-config.ts';
+import { MqttConfig } from "./mqtt-config.ts";
 
 /**
  * Application configuration interface

@@ -3,9 +3,9 @@
  */
 export interface MqttStatus {
   connected: boolean;
-  latency: number;  // in milliseconds
-  lastConnected: string | null;  // ISO timestamp
-  lastDisconnected: string | null;  // ISO timestamp
+  latency: number; // in milliseconds
+  lastConnected: string | null; // ISO timestamp
+  lastDisconnected: string | null; // ISO timestamp
 }
 
 /**
@@ -27,7 +27,10 @@ export function createDefaultMqttStatus(): MqttStatus {
  * @param latency Optional latency value in milliseconds
  * @returns A new MqttStatus object with updated connected state
  */
-export function updateConnectedStatus(status: MqttStatus, latency?: number): MqttStatus {
+export function updateConnectedStatus(
+  status: MqttStatus,
+  latency?: number,
+): MqttStatus {
   const now = new Date().toISOString();
   return {
     ...status,

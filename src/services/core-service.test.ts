@@ -1,7 +1,7 @@
-import { CoreServiceImpl } from './core-service.ts';
-import { MqttClient } from '../mqtt/mqtt-client.ts';
-import { StatusRepository } from '../repositories/status-repository.ts';
-import { AppConfig, MqttStatus } from '../models/index.ts';
+import { CoreServiceImpl } from "./core-service.ts";
+import { MqttClient } from "../mqtt/mqtt-client.ts";
+import { StatusRepository } from "../repositories/status-repository.ts";
+import { AppConfig, MqttStatus } from "../models/index.ts";
 
 // Mock implementations
 class MockMqttClient implements MqttClient {
@@ -11,34 +11,34 @@ class MockMqttClient implements MqttClient {
   disconnectCalled = 0;
   onStatusChangeCalled = 0;
   destroyCalled = 0;
-  
+
   async connect(): Promise<void> {
     this.connectCalled++;
     this.connected = true;
   }
-  
+
   async disconnect(): Promise<void> {
     this.disconnectCalled++;
     this.connected = false;
   }
-  
+
   isConnected(): boolean {
     return this.connected;
   }
-  
+
   getLatency(): number {
     return 100;
   }
-  
+
   onStatusChange(callback: (status: MqttStatus) => void): void {
     this.onStatusChangeCalled++;
     this.statusCallbacks.push(callback);
   }
-  
+
   destroy(): void {
     this.destroyCalled++;
   }
-  
+
   // Helper method for tests to trigger status change
   triggerStatusChange(status: MqttStatus): void {
     for (const callback of this.statusCallbacks) {
@@ -52,16 +52,16 @@ class MockStatusRepository implements StatusRepository {
     connected: false,
     latency: 0,
     lastConnected: null,
-    lastDisconnected: null
+    lastDisconnected: null,
   };
   updateStatusCalled = 0;
   getCurrentStatusCalled = 0;
-  
+
   updateStatus(status: MqttStatus): void {
     this.updateStatusCalled++;
     this.status = { ...status };
   }
-  
+
   getCurrentStatus(): MqttStatus {
     this.getCurrentStatusCalled++;
     return { ...this.status };
@@ -75,19 +75,19 @@ Deno.test("CoreServiceImpl - initialization", async () => {
   const config: AppConfig = {
     server: {
       port: 3000,
-      host: 'localhost'
+      host: "localhost",
     },
     mqtt: {
-      url: 'localhost',
+      url: "localhost",
       port: 1883,
-      clientId: 'test-client'
-    }
+      clientId: "test-client",
+    },
   };
-  
+
   const coreService = new CoreServiceImpl(mqttClient, statusRepository, config);
-  
+
   await coreService.initialize();
-  
+
   assertEquals(mqttClient.connectCalled, 1);
   assertEquals(mqttClient.onStatusChangeCalled, 1);
   assertEquals(mqttClient.connected, true);
@@ -99,20 +99,20 @@ Deno.test("CoreServiceImpl - should not initialize twice", async () => {
   const config: AppConfig = {
     server: {
       port: 3000,
-      host: 'localhost'
+      host: "localhost",
     },
     mqtt: {
-      url: 'localhost',
+      url: "localhost",
       port: 1883,
-      clientId: 'test-client'
-    }
+      clientId: "test-client",
+    },
   };
-  
+
   const coreService = new CoreServiceImpl(mqttClient, statusRepository, config);
-  
+
   await coreService.initialize();
   await coreService.initialize(); // Second call should be ignored
-  
+
   assertEquals(mqttClient.connectCalled, 1); // Connect should only be called once
 });
 
@@ -122,30 +122,30 @@ Deno.test("CoreServiceImpl - update status repository when MQTT status changes",
   const config: AppConfig = {
     server: {
       port: 3000,
-      host: 'localhost'
+      host: "localhost",
     },
     mqtt: {
-      url: 'localhost',
+      url: "localhost",
       port: 1883,
-      clientId: 'test-client'
-    }
+      clientId: "test-client",
+    },
   };
-  
+
   const coreService = new CoreServiceImpl(mqttClient, statusRepository, config);
-  
+
   await coreService.initialize();
-  
+
   const newStatus: MqttStatus = {
     connected: true,
     latency: 150,
     lastConnected: new Date().toISOString(),
-    lastDisconnected: null
+    lastDisconnected: null,
   };
-  
+
   mqttClient.triggerStatusChange(newStatus);
-  
+
   assertEquals(statusRepository.updateStatusCalled, 1);
-  
+
   const currentStatus = statusRepository.getCurrentStatus();
   assertEquals(currentStatus.connected, newStatus.connected);
   assertEquals(currentStatus.latency, newStatus.latency);
@@ -159,26 +159,26 @@ Deno.test("CoreServiceImpl - return current status from repository", async () =>
   const config: AppConfig = {
     server: {
       port: 3000,
-      host: 'localhost'
+      host: "localhost",
     },
     mqtt: {
-      url: 'localhost',
+      url: "localhost",
       port: 1883,
-      clientId: 'test-client'
-    }
+      clientId: "test-client",
+    },
   };
-  
+
   const coreService = new CoreServiceImpl(mqttClient, statusRepository, config);
-  
+
   const expectedStatus: MqttStatus = {
     connected: true,
     latency: 200,
     lastConnected: new Date().toISOString(),
-    lastDisconnected: null
+    lastDisconnected: null,
   };
-  
+
   statusRepository.updateStatus(expectedStatus);
-  
+
   const status = coreService.getMqttStatus();
   assertEquals(statusRepository.getCurrentStatusCalled, 1);
   assertEquals(status.connected, expectedStatus.connected);
@@ -193,20 +193,20 @@ Deno.test("CoreServiceImpl - shutdown and disconnect from MQTT server", async ()
   const config: AppConfig = {
     server: {
       port: 3000,
-      host: 'localhost'
+      host: "localhost",
     },
     mqtt: {
-      url: 'localhost',
+      url: "localhost",
       port: 1883,
-      clientId: 'test-client'
-    }
+      clientId: "test-client",
+    },
   };
-  
+
   const coreService = new CoreServiceImpl(mqttClient, statusRepository, config);
-  
+
   await coreService.initialize();
   await coreService.shutdown();
-  
+
   assertEquals(mqttClient.disconnectCalled, 1);
   assertEquals(mqttClient.destroyCalled, 1);
   assertEquals(mqttClient.connected, false);
@@ -218,19 +218,19 @@ Deno.test("CoreServiceImpl - should not shutdown if not initialized", async () =
   const config: AppConfig = {
     server: {
       port: 3000,
-      host: 'localhost'
+      host: "localhost",
     },
     mqtt: {
-      url: 'localhost',
+      url: "localhost",
       port: 1883,
-      clientId: 'test-client'
-    }
+      clientId: "test-client",
+    },
   };
-  
+
   const coreService = new CoreServiceImpl(mqttClient, statusRepository, config);
-  
+
   await coreService.shutdown(); // Should not call disconnect
-  
+
   assertEquals(mqttClient.disconnectCalled, 0);
 });
 
@@ -240,34 +240,37 @@ Deno.test("CoreServiceImpl - throw error if initialization fails", async () => {
   const config: AppConfig = {
     server: {
       port: 3000,
-      host: 'localhost'
+      host: "localhost",
     },
     mqtt: {
-      url: 'localhost',
+      url: "localhost",
       port: 1883,
-      clientId: 'test-client'
-    }
+      clientId: "test-client",
+    },
   };
-  
+
   // Make connect throw an error
   mqttClient.connect = async () => {
-    throw new Error('Connection failed');
+    throw new Error("Connection failed");
   };
-  
+
   const coreService = new CoreServiceImpl(mqttClient, statusRepository, config);
-  
+
   let errorThrown = false;
   try {
     await coreService.initialize();
   } catch (error) {
     errorThrown = true;
     if (error instanceof Error) {
-      assertEquals(error.message.includes('Core service initialization failed'), true);
+      assertEquals(
+        error.message.includes("Core service initialization failed"),
+        true,
+      );
     } else {
-      throw new Error('Expected an Error instance');
+      throw new Error("Expected an Error instance");
     }
   }
-  
+
   assertEquals(errorThrown, true);
 });
 

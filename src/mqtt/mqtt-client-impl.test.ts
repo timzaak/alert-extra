@@ -94,7 +94,7 @@ Deno.test("MqttClientImpl - latency measurement - sendPing", () => {
       publishCalled = true;
       publishTopic = topic;
       return this; // Return this to match MqttClient interface
-    }
+    },
   };
 
   // Call sendPing
@@ -150,9 +150,9 @@ Deno.test("MqttClientImpl - latency measurement - stopLatencyChecks", () => {
 
   // Set up fake interval and timeout
   // @ts-ignore - setting up for testing
-  client["latencyCheckInterval"] = setTimeout(() => { }, 1000);
+  client["latencyCheckInterval"] = setTimeout(() => {}, 1000);
   // @ts-ignore - setting up for testing
-  client["pingTimeoutId"] = setTimeout(() => { }, 1000);
+  client["pingTimeoutId"] = setTimeout(() => {}, 1000);
 
   // Call stopLatencyChecks
   // @ts-ignore - accessing private method for testing
@@ -198,7 +198,9 @@ function assertEquals(actual: any, expected: any) {
 
 function assertNotNull(value: any) {
   if (value === null || value === undefined) {
-    throw new Error(`Expected value to not be null or undefined, but got ${value}`);
+    throw new Error(
+      `Expected value to not be null or undefined, but got ${value}`,
+    );
   }
 }
 
@@ -206,7 +208,9 @@ function assertNotNull(value: any) {
 
 function assertGreaterThanOrEqual(actual: number, expected: number) {
   if (actual < expected) {
-    throw new Error(`Expected ${actual} to be greater than or equal to ${expected}`);
+    throw new Error(
+      `Expected ${actual} to be greater than or equal to ${expected}`,
+    );
   }
 }
 
@@ -222,7 +226,11 @@ Deno.test("MqttClientImpl - reconnection - startReconnection", () => {
 
   // Set config to enable reconnection
   // @ts-ignore - setting up for testing
-  client["config"] = { url: "test.mosquitto.org", port: 1883, clientId: "test-client" };
+  client["config"] = {
+    url: "test.mosquitto.org",
+    port: 1883,
+    clientId: "test-client",
+  };
 
   // Call startReconnection
   // @ts-ignore - accessing private method for testing
@@ -252,7 +260,11 @@ Deno.test("MqttClientImpl - reconnection - handleDisconnect triggers reconnectio
 
   // Set config to enable reconnection
   // @ts-ignore - setting up for testing
-  client["config"] = { url: "test.mosquitto.org", port: 1883, clientId: "test-client" };
+  client["config"] = {
+    url: "test.mosquitto.org",
+    port: 1883,
+    clientId: "test-client",
+  };
 
   // Call handleDisconnect
   // @ts-ignore - accessing private method for testing
@@ -279,7 +291,7 @@ Deno.test("MqttClientImpl - reconnection - cancelReconnection", () => {
 
   // Set up fake reconnect timeout
   // @ts-ignore - setting up for testing
-  client["reconnectTimeoutId"] = setTimeout(() => { }, 1000);
+  client["reconnectTimeoutId"] = setTimeout(() => {}, 1000);
 
   // Call cancelReconnection
   // @ts-ignore - accessing private method for testing
@@ -301,7 +313,7 @@ Deno.test("MqttClientImpl - reconnection - disconnect cancels reconnection", () 
   };
 
   // @ts-ignore - setting up mock for testing
-  client["stopLatencyChecks"] = () => { };
+  client["stopLatencyChecks"] = () => {};
 
   // Set reconnecting flag
   // @ts-ignore - setting up for testing
@@ -333,7 +345,7 @@ Deno.test("MqttClientImpl - reconnection - destroy resets reconnection state", (
   };
 
   // @ts-ignore - setting up mock for testing
-  client["stopLatencyChecks"] = () => { };
+  client["stopLatencyChecks"] = () => {};
 
   // Set reconnection state
   // @ts-ignore - setting up for testing
@@ -368,7 +380,11 @@ Deno.test("MqttClientImpl - reconnection - attemptReconnection with exponential 
 
   // Set config and reconnect attempts
   // @ts-ignore - setting up for testing
-  client["config"] = { url: "test.mosquitto.org", port: 1883, clientId: "test-client" };
+  client["config"] = {
+    url: "test.mosquitto.org",
+    port: 1883,
+    clientId: "test-client",
+  };
   // @ts-ignore - setting up for testing
   client["reconnectAttempts"] = 0;
 

@@ -1,6 +1,7 @@
 # Implementation Plan
 
-- [x] 1. Set up project structure and configuration
+-
+  1. [x] Set up project structure and configuration
   - [x] 1.1 Create basic project structure with necessary directories
     - Set up src directory with subdirectories for components
     - Create configuration file structure
@@ -12,7 +13,8 @@
     - Add validation for required configuration parameters
     - _Requirements: 2.1, 2.2_
 
-- [x] 2. Implement core data models and interfaces
+-
+  2. [x] Implement core data models and interfaces
 
   - [x] 2.1 Create MQTT status data model
 
@@ -27,7 +29,8 @@
     - Write tests for repository operations
     - _Requirements: 1.3, 1.4, 2.2_
 
-- [x] 3. Implement MQTT client functionality
+-
+  3. [x] Implement MQTT client functionality
   - [x] 3.1 Create MQTT client interface and implementation
     - Define MQTT client interface
     - Implement connection establishment logic
@@ -45,7 +48,8 @@
     - Implement connection status tracking
     - _Requirements: 1.5, 1.6_
 
-- [x] 4. Implement Core Service
+-
+  4. [x] Implement Core Service
   - [x] 4.1 Create Core Service interface and implementation
     - Define Core Service interface
     - Implement initialization and shutdown logic
@@ -57,7 +61,8 @@
     - Implement status retrieval methods
     - _Requirements: 1.3, 1.4_
 
-- [x] 5. Implement HTTP API
+-
+  5. [x] Implement HTTP API
   - [x] 5.1 Create HTTP server setup
     - Set up basic HTTP server
     - Implement request handling framework
@@ -70,7 +75,8 @@
     - Format response according to specification
     - _Requirements: 1.1_
 
-- [x] 6. Implement application entry point
+-
+  6. [x] Implement application entry point
   - [x] 6.1 Create main application file
     - Implement startup sequence
     - Initialize all components

@@ -1,2 +1,2 @@
 // Repositories module exports
-export * from './status-repository';
+export * from "./status-repository";

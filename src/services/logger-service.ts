@@ -7,7 +7,7 @@ export enum LogLevel {
   INFO = 1,
   WARN = 2,
   ERROR = 3,
-  NONE = 4
+  NONE = 4,
 }
 
 export interface LoggerOptions {
@@ -28,7 +28,7 @@ export class LoggerService {
    */
   private constructor(options: LoggerOptions) {
     this.level = options.level;
-    this.prefix = options.prefix || 'Alert';
+    this.prefix = options.prefix || "Alert";
     this.timestamp = options.timestamp !== undefined ? options.timestamp : true;
   }
 
@@ -39,11 +39,13 @@ export class LoggerService {
    */
   public static getInstance(options?: LoggerOptions): LoggerService {
     if (!LoggerService.instance) {
-      LoggerService.instance = new LoggerService(options || {
-        level: LogLevel.INFO,
-        prefix: 'Alert',
-        timestamp: true
-      });
+      LoggerService.instance = new LoggerService(
+        options || {
+          level: LogLevel.INFO,
+          prefix: "Alert",
+          timestamp: true,
+        },
+      );
     }
     return LoggerService.instance;
   }
@@ -72,16 +74,16 @@ export class LoggerService {
    */
   private formatMessage(level: string, message: string): string {
     const parts = [];
-    
+
     if (this.timestamp) {
       parts.push(`[${new Date().toISOString()}]`);
     }
-    
+
     parts.push(`[${this.prefix}]`);
     parts.push(`[${level}]`);
     parts.push(message);
-    
-    return parts.join(' ');
+
+    return parts.join(" ");
   }
 
   /**
@@ -91,7 +93,7 @@ export class LoggerService {
    */
   public debug(message: string, ...data: unknown[]): void {
     if (this.level <= LogLevel.DEBUG) {
-      console.debug(this.formatMessage('DEBUG', message), ...data);
+      console.debug(this.formatMessage("DEBUG", message), ...data);
     }
   }
 
@@ -102,7 +104,7 @@ export class LoggerService {
    */
   public info(message: string, ...data: unknown[]): void {
     if (this.level <= LogLevel.INFO) {
-      console.info(this.formatMessage('INFO', message), ...data);
+      console.info(this.formatMessage("INFO", message), ...data);
     }
   }
 
@@ -113,7 +115,7 @@ export class LoggerService {
    */
   public warn(message: string, ...data: unknown[]): void {
     if (this.level <= LogLevel.WARN) {
-      console.warn(this.formatMessage('WARN', message), ...data);
+      console.warn(this.formatMessage("WARN", message), ...data);
     }
   }
 
@@ -123,14 +125,23 @@ export class LoggerService {
    * @param error Error object
    * @param data Additional data to log
    */
-  public error(message: string, error?: Error | unknown, ...data: unknown[]): void {
+  public error(
+    message: string,
+    error?: Error | unknown,
+    ...data: unknown[]
+  ): void {
     if (this.level <= LogLevel.ERROR) {
       if (error instanceof Error) {
-        console.error(this.formatMessage('ERROR', message), error.message, error.stack, ...data);
+        console.error(
+          this.formatMessage("ERROR", message),
+          error.message,
+          error.stack,
+          ...data,
+        );
       } else if (error !== undefined) {
-        console.error(this.formatMessage('ERROR', message), error, ...data);
+        console.error(this.formatMessage("ERROR", message), error, ...data);
       } else {
-        console.error(this.formatMessage('ERROR', message), ...data);
+        console.error(this.formatMessage("ERROR", message), ...data);
       }
     }
   }

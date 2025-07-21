@@ -1,4 +1,4 @@
-import { MqttConfig, MqttStatus } from '@/models';
+import { MqttConfig, MqttStatus } from "@/models";
 
 /**
  * MQTT Client interface as defined in the design document

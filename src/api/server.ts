@@ -1,10 +1,10 @@
-import { Hono } from 'hono';
-import { logger as honoLogger } from 'hono/logger';
-import { cors } from 'hono/cors';
-import { prettyJSON } from 'hono/pretty-json';
-import { CoreService } from '../services/core-service.ts';
-import { logger } from '../services/logger-service.ts';
-import { createErrorResponse, handleError } from '../utils/error-utils.ts';
+import { Hono } from "hono";
+import { logger as honoLogger } from "hono/logger";
+import { cors } from "hono/cors";
+import { prettyJSON } from "hono/pretty-json";
+import { CoreService } from "../services/core-service.ts";
+import { logger } from "../services/logger-service.ts";
+import { createErrorResponse, handleError } from "../utils/error-utils.ts";
 
 /**
  * HTTP API Server for the Alert system
@@ -34,19 +34,22 @@ export class ApiServer {
    */
   private setupMiddleware(): void {
     // Add logger middleware
-    this.app.use('*', honoLogger());
-    
+    this.app.use("*", honoLogger());
+
     // Add CORS middleware
-    this.app.use('*', cors({
-      origin: '*',
-      allowMethods: ['GET'],
-      allowHeaders: ['Content-Type', 'Authorization'],
-      exposeHeaders: ['Content-Length'],
-      maxAge: 600,
-    }));
-    
+    this.app.use(
+      "*",
+      cors({
+        origin: "*",
+        allowMethods: ["GET"],
+        allowHeaders: ["Content-Type", "Authorization"],
+        exposeHeaders: ["Content-Length"],
+        maxAge: 600,
+      }),
+    );
+
     // Add pretty JSON middleware for development
-    this.app.use('*', prettyJSON());
+    this.app.use("*", prettyJSON());
   }
 
   /**
@@ -57,28 +60,28 @@ export class ApiServer {
    */
   private setupRoutes(): void {
     // Health check endpoint
-    this.app.get('/health', (c) => {
+    this.app.get("/health", (c) => {
       return c.json({
-        status: 'ok',
-        timestamp: new Date().toISOString()
+        status: "ok",
+        timestamp: new Date().toISOString(),
       });
     });
-    
+
     // API version endpoint
-    this.app.get('/version', (c) => {
+    this.app.get("/version", (c) => {
       return c.json({
-        version: '1.0.0',
-        name: 'Alert MQTT Monitoring Service'
+        version: "1.0.0",
+        name: "Alert MQTT Monitoring Service",
       });
     });
-    
+
     // MQTT status endpoint
-    this.app.get('/mqtt/status', (c) => {
+    this.app.get("/mqtt/status", (c) => {
       try {
         const mqttStatus = this.coreService.getMqttStatus();
         return c.json(mqttStatus);
       } catch (error) {
-        handleError(error, 'Error retrieving MQTT status');
+        handleError(error, "Error retrieving MQTT status");
         return c.json(createErrorResponse(error), 500);
       }
     });
@@ -90,7 +93,7 @@ export class ApiServer {
    */
   private setupErrorHandler(): void {
     this.app.onError((err, c) => {
-      handleError(err, 'API Server Error');
+      handleError(err, "API Server Error");
       return c.json(createErrorResponse(err), 500);
     });
   }

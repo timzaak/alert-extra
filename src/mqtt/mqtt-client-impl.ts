@@ -1,17 +1,24 @@
-import { MqttConfig, MqttStatus, createDefaultMqttStatus, updateConnectedStatus, updateDisconnectedStatus, updateLatency } from '@/models';
-import { MqttClient } from './mqtt-client.ts';
-import * as mqtt from 'mqtt';
-import { logger } from '../services/logger-service.ts';
-import { AppError, ErrorCode, handleError } from '../utils/error-utils.ts';
+import {
+  createDefaultMqttStatus,
+  MqttConfig,
+  MqttStatus,
+  updateConnectedStatus,
+  updateDisconnectedStatus,
+  updateLatency,
+} from "@/models";
+import { MqttClient } from "./mqtt-client.ts";
+import * as mqtt from "mqtt";
+import { logger } from "../services/logger-service.ts";
+import { AppError, ErrorCode, handleError } from "../utils/error-utils.ts";
 
 // Default topics used for ping/pong latency measurement if not specified in config
-const DEFAULT_PING_TOPIC = 'alert/ping';
-const DEFAULT_PONG_TOPIC = 'alert/pong';
+const DEFAULT_PING_TOPIC = "alert/ping";
+const DEFAULT_PONG_TOPIC = "alert/pong";
 
 // Reconnection constants
 const INITIAL_RECONNECT_DELAY_MS = 1000; // Start with 1 second delay
-const MAX_RECONNECT_DELAY_MS = 30000;    // Maximum 30 seconds delay
-const RECONNECT_BACKOFF_FACTOR = 1.5;    // Exponential backoff factor
+const MAX_RECONNECT_DELAY_MS = 30000; // Maximum 30 seconds delay
+const RECONNECT_BACKOFF_FACTOR = 1.5; // Exponential backoff factor
 
 /**
  * Implementation of the MqttClient interface
@@ -46,14 +53,14 @@ export class MqttClientImpl implements MqttClient {
     // Set ping/pong topics from config or use defaults
     this.pingTopic = config.pingTopic || DEFAULT_PING_TOPIC;
     this.pongTopic = config.pongTopic || DEFAULT_PONG_TOPIC;
-    
+
     const url = `${config.url}:${config.port}`;
-    
+
     const options: mqtt.IClientOptions = {
       clientId: config.clientId,
       keepalive: config.keepAlive || 60,
       reconnectPeriod: 0, // We'll handle reconnection manually
-      clean: true
+      clean: true,
     };
 
     if (config.username) {
@@ -66,75 +73,82 @@ export class MqttClientImpl implements MqttClient {
 
     return new Promise((resolve, reject) => {
       try {
-        logger.debug(`Connecting to MQTT server at ${config.url}:${config.port} with client ID ${config.clientId}`);
+        logger.debug(
+          `Connecting to MQTT server at ${config.url}:${config.port} with client ID ${config.clientId}`,
+        );
         this.client = mqtt.connect(url, options);
 
-        this.client.on('connect', () => {
+        this.client.on("connect", () => {
           // Reset reconnection state on successful connection
           this.reconnecting = false;
           this.reconnectAttempts = 0;
-          
+
           this.handleConnect();
-          
+
           // Subscribe to pong topic for latency measurement
           this.client?.subscribe(this.pongTopic, (err) => {
             if (err) {
-              handleError(err, `Failed to subscribe to pong topic: ${this.pongTopic}`);
+              handleError(
+                err,
+                `Failed to subscribe to pong topic: ${this.pongTopic}`,
+              );
             }
           });
-          
+
           // Setup message handler for pong messages
-          this.client?.on('message', (topic, message) => {
+          this.client?.on("message", (topic, message) => {
             if (topic === this.pongTopic) {
               this.handlePongMessage(message);
             }
           });
-          
+
           // Start periodic latency checks
           this.startLatencyChecks();
-          
+
           resolve();
         });
 
-        this.client.on('error', (err) => {
+        this.client.on("error", (err) => {
           const mqttError = new AppError(
             `MQTT connection error: ${err.message}`,
             ErrorCode.MQTT_CONNECTION_ERROR,
-            { url: config.url, port: config.port }
+            { url: config.url, port: config.port },
           );
-          handleError(mqttError, 'MQTT client error');
+          handleError(mqttError, "MQTT client error");
           reject(mqttError);
         });
 
-        this.client.on('close', () => {
+        this.client.on("close", () => {
           this.handleDisconnect();
         });
 
-        this.client.on('offline', () => {
+        this.client.on("offline", () => {
           this.handleDisconnect();
         });
 
         // Set a connection timeout
         const timeout = setTimeout(() => {
           const timeoutError = new AppError(
-            'MQTT connection timeout',
+            "MQTT connection timeout",
             ErrorCode.MQTT_CONNECTION_ERROR,
-            { url: config.url, port: config.port, timeout: '10s' }
+            { url: config.url, port: config.port, timeout: "10s" },
           );
           reject(timeoutError);
         }, 10000); // 10 seconds timeout
 
         // Clear timeout on successful connection
-        this.client.once('connect', () => {
+        this.client.once("connect", () => {
           clearTimeout(timeout);
         });
       } catch (error) {
         const wrappedError = new AppError(
-          `Failed to create MQTT client: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          `Failed to create MQTT client: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
           ErrorCode.MQTT_CONNECTION_ERROR,
-          { url: config.url, port: config.port }
+          { url: config.url, port: config.port },
         );
-        handleError(wrappedError, 'MQTT connection setup error');
+        handleError(wrappedError, "MQTT connection setup error");
         reject(wrappedError);
       }
     });
@@ -146,11 +160,11 @@ export class MqttClientImpl implements MqttClient {
   async disconnect(): Promise<void> {
     // Stop latency checks when disconnecting
     this.stopLatencyChecks();
-    
+
     // Cancel any pending reconnection attempts
     this.cancelReconnection();
     this.reconnecting = false;
-    
+
     return new Promise((resolve) => {
       if (!this.client) {
         resolve();
@@ -194,7 +208,7 @@ export class MqttClientImpl implements MqttClient {
    */
   onStatusChange(callback: (status: MqttStatus) => void): void {
     this.statusChangeCallbacks.push(callback);
-    
+
     // Immediately call with current status
     callback(this.status);
   }
@@ -213,13 +227,13 @@ export class MqttClientImpl implements MqttClient {
   private handleDisconnect(): void {
     this.status = updateDisconnectedStatus(this.status);
     this.notifyStatusChange();
-    
+
     // Start reconnection process if we have a config and aren't already reconnecting
     if (this.config && !this.reconnecting) {
       this.startReconnection();
     }
   }
-  
+
   /**
    * Start the reconnection process with exponential backoff
    */
@@ -228,50 +242,59 @@ export class MqttClientImpl implements MqttClient {
     if (this.reconnecting) {
       return;
     }
-    
+
     this.reconnecting = true;
     this.attemptReconnection();
   }
-  
+
   /**
    * Attempt to reconnect to the MQTT server with exponential backoff
    */
   private attemptReconnection(): void {
     // Cancel any existing reconnection attempt
     this.cancelReconnection();
-    
+
     // Calculate delay with exponential backoff
     const delay = Math.min(
-      INITIAL_RECONNECT_DELAY_MS * Math.pow(RECONNECT_BACKOFF_FACTOR, this.reconnectAttempts),
-      MAX_RECONNECT_DELAY_MS
+      INITIAL_RECONNECT_DELAY_MS *
+        Math.pow(RECONNECT_BACKOFF_FACTOR, this.reconnectAttempts),
+      MAX_RECONNECT_DELAY_MS,
     );
-    
-    logger.info(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
-    
+
+    logger.info(
+      `Attempting to reconnect in ${delay}ms (attempt ${
+        this.reconnectAttempts + 1
+      })`,
+    );
+
     // Schedule reconnection attempt
     this.reconnectTimeoutId = setTimeout(async () => {
       this.reconnectTimeoutId = null;
-      
+
       try {
         if (this.config) {
-          logger.info(`Reconnecting to MQTT server (attempt ${this.reconnectAttempts + 1})...`);
+          logger.info(
+            `Reconnecting to MQTT server (attempt ${
+              this.reconnectAttempts + 1
+            })...`,
+          );
           await this.connect(this.config);
-          
+
           // Reset reconnection state on successful connection
           this.reconnectAttempts = 0;
           this.reconnecting = false;
-          logger.info('Reconnection successful');
+          logger.info("Reconnection successful");
         }
       } catch (error) {
-        logger.error('Reconnection failed', error);
-        
+        logger.error("Reconnection failed", error);
+
         // Increment attempt counter and try again
         this.reconnectAttempts++;
         this.attemptReconnection();
       }
     }, delay) as unknown as number;
   }
-  
+
   /**
    * Cancel any pending reconnection attempts
    */
@@ -298,12 +321,12 @@ export class MqttClientImpl implements MqttClient {
   private startLatencyChecks(): void {
     // Clear any existing interval
     this.stopLatencyChecks();
-    
+
     // Start new interval (every 30 seconds)
     this.latencyCheckInterval = setInterval(() => {
       this.sendPing();
     }, 30000) as unknown as number;
-    
+
     // Perform an initial latency check
     this.sendPing();
   }
@@ -316,7 +339,7 @@ export class MqttClientImpl implements MqttClient {
       clearInterval(this.latencyCheckInterval);
       this.latencyCheckInterval = null;
     }
-    
+
     // Clear any pending ping timeout
     if (this.pingTimeoutId !== null) {
       clearTimeout(this.pingTimeoutId);
@@ -331,25 +354,25 @@ export class MqttClientImpl implements MqttClient {
     if (!this.client?.connected) {
       return;
     }
-    
+
     // Clear any existing ping timeout
     if (this.pingTimeoutId !== null) {
       clearTimeout(this.pingTimeoutId);
     }
-    
+
     // Generate a unique ping ID
     const pingId = Date.now().toString();
-    
+
     // Store the current timestamp
     this.pingTimestamp = performance.now();
-    
+
     // Publish ping message
     this.client.publish(this.pingTopic, pingId, { qos: 0 });
-    
+
     // Set timeout for ping response (5 seconds)
     this.pingTimeoutId = setTimeout(() => {
       // If we don't get a response, consider it a timeout
-      logger.warn('Ping timeout - no response received');
+      logger.warn("Ping timeout - no response received");
       this.pingTimestamp = null;
       this.pingTimeoutId = null;
     }, 5000) as unknown as number;
@@ -364,11 +387,11 @@ export class MqttClientImpl implements MqttClient {
     if (this.pingTimestamp !== null) {
       const now = performance.now();
       const latency = Math.round(now - this.pingTimestamp);
-      
+
       // Update the status with the new latency
       this.status = updateLatency(this.status, latency);
       this.notifyStatusChange();
-      
+
       // Clear the ping timestamp and timeout
       this.pingTimestamp = null;
       if (this.pingTimeoutId !== null) {
@@ -377,7 +400,7 @@ export class MqttClientImpl implements MqttClient {
       }
     }
   }
-  
+
   /**
    * Clean up resources when the client is destroyed
    */

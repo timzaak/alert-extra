@@ -2,15 +2,15 @@
 
 Vibe Coding, adding alertable sensors to Uptime Kuma.
 
-
 **MQTT Health**
+
 ```shell
 curl 'http://127.0.0.1:3000/mqtt/status'
 # {"connected":true,"latency":2,"lastConnected":"2025-07-21T03:47:12.111Z","lastDisconnected":null}
 ```
 
-
 ## Requirements
+
 - [Deno](https://deno.com/) 1.37.0 or higher
 
 ## Build and Run
@@ -39,8 +39,10 @@ deno task test
 
 The application can be configured using the following environment variables:
 
-- `LOG_LEVEL`: Log level, options are `DEBUG`, `INFO`, `WARN`, `ERROR`, `NONE` (default is `INFO`)
+- `LOG_LEVEL`: Log level, options are `DEBUG`, `INFO`, `WARN`, `ERROR`, `NONE`
+  (default is `INFO`)
 
 ### Configuration File
 
-Application configuration is located in the `config/default.json` file, which contains server and MQTT connection settings.
+Application configuration is located in the `config/default.json` file, which
+contains server and MQTT connection settings.
