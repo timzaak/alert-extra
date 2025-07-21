@@ -1,8 +1,8 @@
-import { Hono } from 'hono';
 import { ConfigService } from './src/services/config-service.ts';
 import { CoreServiceImpl } from './src/services/core-service.ts';
 import { MqttClientImpl } from './src/mqtt/mqtt-client-impl.ts';
 import { InMemoryStatusRepository } from './src/repositories/status-repository.ts';
+import { ApiServer } from './src/api/server.ts';
 
 // Global reference to core service for cleanup
 let coreService: CoreServiceImpl | null = null;
@@ -45,20 +45,15 @@ async function main() {
     coreService = new CoreServiceImpl(mqttClient, statusRepository, config);
     await coreService.initialize();
     
-    // Create Hono app
-    const app = new Hono();
-    
-    // Basic route for testing
-    app.get('/', (c) => {
-      return c.text('Alert MQTT Monitoring Service');
-    });
+    // Create API server
+    const apiServer = new ApiServer(coreService);
     
     // Start server
     console.log(`Starting server on ${config.server.host}:${config.server.port}...`);
     await Deno.serve({
       port: config.server.port,
       hostname: config.server.host
-    }, app.fetch);
+    }, apiServer.getFetchHandler());
     
   } catch (error) {
     console.error(`Failed to start application: ${error instanceof Error ? error.message : 'Unknown error'}`);

@@ -57,14 +57,14 @@
     - Implement status retrieval methods
     - _Requirements: 1.3, 1.4_
 
-- [ ] 5. Implement HTTP API
-  - [ ] 5.1 Create HTTP server setup
+- [x] 5. Implement HTTP API
+  - [x] 5.1 Create HTTP server setup
     - Set up basic HTTP server
     - Implement request handling framework
     - Add error handling middleware
     - _Requirements: 1.1, 2.3_
 
-  - [ ] 5.2 Implement MQTT status endpoint
+  - [x] 5.2 Implement MQTT status endpoint
     - Create GET endpoint for MQTT status
     - Connect endpoint to Core Service
     - Format response according to specification
