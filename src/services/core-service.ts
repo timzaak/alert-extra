@@ -1,6 +1,8 @@
 import { AppConfig, MqttStatus } from '../models/index.ts';
 import { MqttClient } from '../mqtt/mqtt-client.ts';
 import { StatusRepository } from '../repositories/status-repository.ts';
+import { logger } from './logger-service.ts';
+import { AppError, ErrorCode, handleError, withErrorHandling } from '../utils/error-utils.ts';
 
 /**
  * Core Service interface as defined in the design document
@@ -53,17 +55,23 @@ export class CoreServiceImpl implements CoreService {
       });
 
       // Connect to MQTT server
+      logger.info('Connecting to MQTT server...');
       await this.mqttClient.connect(this.config.mqtt);
       
       this.initialized = true;
-      console.log('Core service initialized successfully');
+      logger.info('Core service initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize core service:', error);
-      if (error instanceof Error) {
-        throw new Error(`Core service initialization failed: ${error.message}`);
-      } else {
-        throw new Error('Core service initialization failed: Unknown error');
-      }
+      // Handle the error with our error utility
+      const wrappedError = error instanceof AppError 
+        ? error 
+        : new AppError(
+            `Core service initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            ErrorCode.INTERNAL_ERROR,
+            { component: 'CoreService' }
+          );
+      
+      handleError(wrappedError, 'Failed to initialize core service');
+      throw wrappedError;
     }
   }
 
@@ -87,20 +95,26 @@ export class CoreServiceImpl implements CoreService {
 
     try {
       // Disconnect from MQTT server
+      logger.info('Disconnecting from MQTT server...');
       await this.mqttClient.disconnect();
       
       // Clean up resources
       this.mqttClient.destroy();
       
       this.initialized = false;
-      console.log('Core service shut down successfully');
+      logger.info('Core service shut down successfully');
     } catch (error) {
-      console.error('Error during core service shutdown:', error);
-      if (error instanceof Error) {
-        throw new Error(`Core service shutdown failed: ${error.message}`);
-      } else {
-        throw new Error('Core service shutdown failed: Unknown error');
-      }
+      // Handle the error with our error utility
+      const wrappedError = error instanceof AppError 
+        ? error 
+        : new AppError(
+            `Core service shutdown failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            ErrorCode.INTERNAL_ERROR,
+            { component: 'CoreService' }
+          );
+      
+      handleError(wrappedError, 'Error during core service shutdown');
+      throw wrappedError;
     }
   }
 }

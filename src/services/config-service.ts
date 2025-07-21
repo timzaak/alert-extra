@@ -1,3 +1,6 @@
+import { logger } from './logger-service.ts';
+import { AppError, ErrorCode, handleError } from '../utils/error-utils.ts';
+
 // Define interfaces locally to avoid import issues
 interface MqttConfig {
   url: string;
@@ -29,23 +32,41 @@ export class ConfigService {
    */
   public async loadConfig(configPath: string = 'config/default.json'): Promise<AppConfig> {
     try {
+      logger.debug(`Loading configuration from ${configPath}`);
+      
       // Load configuration from file
       const configFile = await Deno.readTextFile(configPath);
       const fileConfig = JSON.parse(configFile) as AppConfig;
+      logger.debug('Configuration file loaded successfully');
       
       // Merge with environment variables if they exist
       const config = this.mergeWithEnvironment(fileConfig);
+      logger.debug('Configuration merged with environment variables');
       
       // Validate the configuration
       this.validateConfig(config);
+      logger.debug('Configuration validated successfully');
       
       this.config = config;
       return config;
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
-        throw new Error(`Configuration file not found: ${configPath}`);
+        const notFoundError = new AppError(
+          `Configuration file not found: ${configPath}`,
+          ErrorCode.CONFIG_ERROR,
+          { configPath }
+        );
+        handleError(notFoundError, 'Configuration loading error');
+        throw notFoundError;
       }
-      throw new Error(`Failed to load configuration: ${error.message}`);
+      
+      const configError = new AppError(
+        `Failed to load configuration: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ErrorCode.CONFIG_ERROR,
+        { configPath }
+      );
+      handleError(configError, 'Configuration loading error');
+      throw configError;
     }
   }
 
@@ -108,13 +129,25 @@ export class ConfigService {
   private validateConfig(config: AppConfig): void {
     // Validate server configuration
     if (!config.server) {
-      throw new Error('Server configuration is missing');
+      throw new AppError(
+        'Server configuration is missing',
+        ErrorCode.CONFIG_ERROR,
+        { config }
+      );
     }
     if (typeof config.server.port !== 'number' || config.server.port <= 0) {
-      throw new Error('Server port must be a positive number');
+      throw new AppError(
+        'Server port must be a positive number',
+        ErrorCode.CONFIG_ERROR,
+        { port: config.server.port }
+      );
     }
     if (!config.server.host) {
-      throw new Error('Server host is missing');
+      throw new AppError(
+        'Server host is missing',
+        ErrorCode.CONFIG_ERROR,
+        { server: config.server }
+      );
     }
 
     // Validate MQTT configuration
@@ -128,22 +161,42 @@ export class ConfigService {
    */
   private validateMqttConfig(mqttConfig: MqttConfig): void {
     if (!mqttConfig) {
-      throw new Error('MQTT configuration is missing');
+      throw new AppError(
+        'MQTT configuration is missing',
+        ErrorCode.CONFIG_ERROR,
+        { section: 'mqtt' }
+      );
     }
     if (!mqttConfig.url) {
-      throw new Error('MQTT URL is missing');
+      throw new AppError(
+        'MQTT URL is missing',
+        ErrorCode.CONFIG_ERROR,
+        { mqtt: mqttConfig }
+      );
     }
     if (typeof mqttConfig.port !== 'number' || mqttConfig.port <= 0) {
-      throw new Error('MQTT port must be a positive number');
+      throw new AppError(
+        'MQTT port must be a positive number',
+        ErrorCode.CONFIG_ERROR,
+        { port: mqttConfig.port }
+      );
     }
     if (!mqttConfig.clientId) {
-      throw new Error('MQTT client ID is missing');
+      throw new AppError(
+        'MQTT client ID is missing',
+        ErrorCode.CONFIG_ERROR,
+        { mqtt: mqttConfig }
+      );
     }
     
     // Optional fields validation
     if (mqttConfig.keepAlive !== undefined && 
         (typeof mqttConfig.keepAlive !== 'number' || mqttConfig.keepAlive <= 0)) {
-      throw new Error('MQTT keep alive must be a positive number');
+      throw new AppError(
+        'MQTT keep alive must be a positive number',
+        ErrorCode.CONFIG_ERROR,
+        { keepAlive: mqttConfig.keepAlive }
+      );
     }
   }
 }

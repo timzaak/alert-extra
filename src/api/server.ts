@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
-import { logger } from 'hono/logger';
+import { logger as honoLogger } from 'hono/logger';
 import { cors } from 'hono/cors';
 import { prettyJSON } from 'hono/pretty-json';
 import { CoreService } from '../services/core-service.ts';
+import { logger } from '../services/logger-service.ts';
+import { createErrorResponse, handleError } from '../utils/error-utils.ts';
 
 /**
  * HTTP API Server for the Alert system
@@ -32,7 +34,7 @@ export class ApiServer {
    */
   private setupMiddleware(): void {
     // Add logger middleware
-    this.app.use('*', logger());
+    this.app.use('*', honoLogger());
     
     // Add CORS middleware
     this.app.use('*', cors({
@@ -76,12 +78,8 @@ export class ApiServer {
         const mqttStatus = this.coreService.getMqttStatus();
         return c.json(mqttStatus);
       } catch (error) {
-        console.error('Error retrieving MQTT status:', error);
-        return c.json({
-          error: true,
-          message: error instanceof Error ? error.message : 'Failed to retrieve MQTT status',
-          code: 'MQTT_STATUS_ERROR'
-        }, 500);
+        handleError(error, 'Error retrieving MQTT status');
+        return c.json(createErrorResponse(error), 500);
       }
     });
   }
@@ -92,13 +90,8 @@ export class ApiServer {
    */
   private setupErrorHandler(): void {
     this.app.onError((err, c) => {
-      console.error('API Server Error:', err);
-      
-      return c.json({
-        error: true,
-        message: err.message || 'Internal Server Error',
-        code: err.name || 'INTERNAL_ERROR'
-      }, 500);
+      handleError(err, 'API Server Error');
+      return c.json(createErrorResponse(err), 500);
     });
   }
 

@@ -1,4 +1,5 @@
 import { MqttStatus, createDefaultMqttStatus } from '../models/mqtt-status.ts';
+import { logger } from '../services/logger-service.ts';
 
 /**
  * Status Repository interface as defined in the design document
@@ -26,7 +27,22 @@ export class InMemoryStatusRepository implements StatusRepository {
    * @param status The new status to store
    */
   updateStatus(status: MqttStatus): void {
+    const previousStatus = this.status;
     this.status = { ...status };
+    
+    // Log connection state changes
+    if (previousStatus.connected !== status.connected) {
+      if (status.connected) {
+        logger.info('MQTT connection status changed to connected');
+      } else {
+        logger.warn('MQTT connection status changed to disconnected');
+      }
+    }
+    
+    // Log significant latency changes (more than 50ms difference)
+    if (Math.abs(previousStatus.latency - status.latency) > 50) {
+      logger.debug(`MQTT latency changed from ${previousStatus.latency}ms to ${status.latency}ms`);
+    }
   }
 
   /**

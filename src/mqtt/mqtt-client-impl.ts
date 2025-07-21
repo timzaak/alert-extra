@@ -1,6 +1,8 @@
 import { MqttConfig, MqttStatus, createDefaultMqttStatus, updateConnectedStatus, updateDisconnectedStatus, updateLatency } from '@/models';
 import { MqttClient } from './mqtt-client.ts';
 import * as mqtt from 'mqtt';
+import { logger } from '../services/logger-service.ts';
+import { AppError, ErrorCode, handleError } from '../utils/error-utils.ts';
 
 // Topic used for ping/pong latency measurement
 const PING_TOPIC = 'alert/ping';
@@ -58,6 +60,7 @@ export class MqttClientImpl implements MqttClient {
 
     return new Promise((resolve, reject) => {
       try {
+        logger.debug(`Connecting to MQTT server at ${config.url}:${config.port} with client ID ${config.clientId}`);
         this.client = mqtt.connect(url, options);
 
         this.client.on('connect', () => {
@@ -70,7 +73,7 @@ export class MqttClientImpl implements MqttClient {
           // Subscribe to pong topic for latency measurement
           this.client?.subscribe(PONG_TOPIC, (err) => {
             if (err) {
-              console.error('Failed to subscribe to pong topic:', err);
+              handleError(err, 'Failed to subscribe to pong topic');
             }
           });
           
@@ -88,8 +91,13 @@ export class MqttClientImpl implements MqttClient {
         });
 
         this.client.on('error', (err) => {
-          console.error('MQTT connection error:', err);
-          reject(err);
+          const mqttError = new AppError(
+            `MQTT connection error: ${err.message}`,
+            ErrorCode.MQTT_CONNECTION_ERROR,
+            { url: config.url, port: config.port }
+          );
+          handleError(mqttError, 'MQTT client error');
+          reject(mqttError);
         });
 
         this.client.on('close', () => {
@@ -102,7 +110,12 @@ export class MqttClientImpl implements MqttClient {
 
         // Set a connection timeout
         const timeout = setTimeout(() => {
-          reject(new Error('MQTT connection timeout'));
+          const timeoutError = new AppError(
+            'MQTT connection timeout',
+            ErrorCode.MQTT_CONNECTION_ERROR,
+            { url: config.url, port: config.port, timeout: '10s' }
+          );
+          reject(timeoutError);
         }, 10000); // 10 seconds timeout
 
         // Clear timeout on successful connection
@@ -110,7 +123,13 @@ export class MqttClientImpl implements MqttClient {
           clearTimeout(timeout);
         });
       } catch (error) {
-        reject(error);
+        const wrappedError = new AppError(
+          `Failed to create MQTT client: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          ErrorCode.MQTT_CONNECTION_ERROR,
+          { url: config.url, port: config.port }
+        );
+        handleError(wrappedError, 'MQTT connection setup error');
+        reject(wrappedError);
       }
     });
   }
@@ -221,7 +240,7 @@ export class MqttClientImpl implements MqttClient {
       MAX_RECONNECT_DELAY_MS
     );
     
-    console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
+    logger.info(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
     
     // Schedule reconnection attempt
     this.reconnectTimeoutId = setTimeout(async () => {
@@ -229,16 +248,16 @@ export class MqttClientImpl implements MqttClient {
       
       try {
         if (this.config) {
-          console.log(`Reconnecting to MQTT server (attempt ${this.reconnectAttempts + 1})...`);
+          logger.info(`Reconnecting to MQTT server (attempt ${this.reconnectAttempts + 1})...`);
           await this.connect(this.config);
           
           // Reset reconnection state on successful connection
           this.reconnectAttempts = 0;
           this.reconnecting = false;
-          console.log('Reconnection successful');
+          logger.info('Reconnection successful');
         }
       } catch (error) {
-        console.error('Reconnection failed:', error);
+        logger.error('Reconnection failed', error);
         
         // Increment attempt counter and try again
         this.reconnectAttempts++;
@@ -324,7 +343,7 @@ export class MqttClientImpl implements MqttClient {
     // Set timeout for ping response (5 seconds)
     this.pingTimeoutId = setTimeout(() => {
       // If we don't get a response, consider it a timeout
-      console.warn('Ping timeout - no response received');
+      logger.warn('Ping timeout - no response received');
       this.pingTimestamp = null;
       this.pingTimeoutId = null;
     }, 5000) as unknown as number;
