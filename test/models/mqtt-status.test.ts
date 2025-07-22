@@ -4,7 +4,7 @@ import {
   updateConnectedStatus,
   updateDisconnectedStatus,
   updateLatency,
-} from "./mqtt-status.ts";
+} from "../../src/models/mqtt-status.ts";
 
 // Simple assertion function
 function assertEquals(actual: unknown, expected: unknown, msg?: string): void {

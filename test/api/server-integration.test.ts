@@ -1,13 +1,13 @@
-import { ApiServer } from "./server.ts";
-import { CoreServiceImpl } from "../services/core-service.ts";
-import { MqttClientImpl } from "../mqtt/mqtt-client-impl.ts";
-import { InMemoryStatusRepository } from "../repositories/status-repository.ts";
-import { AppConfig } from "../models/app-config.ts";
+import { ApiServer } from "../../src/api/server.ts";
+import { CoreServiceImpl } from "../../src/services/core-service.ts";
+import { MqttClientImpl } from "../../src/mqtt/mqtt-client-impl.ts";
+import { InMemoryStatusRepository } from "../../src/repositories/status-repository.ts";
+import { AppConfig } from "../../src/models/app-config.ts";
 import {
   createDefaultMqttStatus,
   MqttStatus,
   updateConnectedStatus,
-} from "../models/mqtt-status.ts";
+} from "../../src/models/mqtt-status.ts";
 
 // Simple assertion function for testing
 function assertEquals(actual: unknown, expected: unknown, msg?: string): void {

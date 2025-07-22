@@ -1,7 +1,7 @@
-import { MqttClientImpl } from "../mqtt/mqtt-client-impl.ts";
-import { InMemoryStatusRepository } from "../repositories/status-repository.ts";
-import { CoreServiceImpl } from "./core-service.ts";
-import { AppConfig } from "../models/index.ts";
+import { MqttClientImpl } from "../../src/mqtt/mqtt-client-impl.ts";
+import { InMemoryStatusRepository } from "../../src/repositories/status-repository.ts";
+import { CoreServiceImpl } from "../../src/services/core-service.ts";
+import { AppConfig } from "../../src/models/index.ts";
 
 // Integration test for CoreServiceImpl with real implementations
 Deno.test("CoreServiceImpl - Integration - MQTT client updates status repository", async () => {

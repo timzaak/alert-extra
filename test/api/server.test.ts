@@ -1,6 +1,6 @@
-import { ApiServer } from "./server.ts";
-import { CoreService } from "../services/core-service.ts";
-import { MqttStatus } from "../models/mqtt-status.ts";
+import { ApiServer } from "../../src/api/server.ts";
+import { CoreService } from "../../src/services/core-service.ts";
+import { MqttStatus } from "../../src/models/mqtt-status.ts";
 
 // Simple assertion function for testing
 function assertEquals(actual: unknown, expected: unknown, msg?: string): void {

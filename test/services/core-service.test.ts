@@ -1,7 +1,7 @@
-import { CoreServiceImpl } from "./core-service.ts";
-import { MqttClient } from "../mqtt/mqtt-client.ts";
-import { StatusRepository } from "../repositories/status-repository.ts";
-import { AppConfig, MqttStatus } from "../models/index.ts";
+import { CoreServiceImpl } from "../../src/services/core-service.ts";
+import { MqttClient } from "../../src/mqtt/mqtt-client.ts";
+import { StatusRepository } from "../../src/repositories/status-repository.ts";
+import { AppConfig, MqttStatus } from "../../src/models/index.ts";
 
 // Mock implementations
 class MockMqttClient implements MqttClient {

@@ -1,4 +1,4 @@
-import { ConfigService } from "./config-service.ts";
+import { ConfigService } from "../../src/services/config-service.ts";
 
 // Define AppConfig interface for testing
 interface AppConfig {

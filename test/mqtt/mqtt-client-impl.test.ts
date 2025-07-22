@@ -1,5 +1,5 @@
-import { MqttClientImpl } from "./mqtt-client-impl.ts";
-import { MqttStatus } from "@/models";
+import { MqttClientImpl } from "../../src/mqtt/mqtt-client-impl.ts";
+import { MqttStatus } from "../../src/models/index.ts";
 
 // Simple test implementation that doesn't rely on mocking mqtt module
 Deno.test("MqttClientImpl - initialization", () => {

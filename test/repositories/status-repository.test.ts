@@ -1,5 +1,5 @@
-import { InMemoryStatusRepository } from "./status-repository.ts";
-import { MqttStatus } from "../models/mqtt-status.ts";
+import { InMemoryStatusRepository } from "../../src/repositories/status-repository.ts";
+import { MqttStatus } from "../../src/models/mqtt-status.ts";
 
 // Simple assertion function
 function assertEquals(actual: unknown, expected: unknown, msg?: string): void {
